@@ -19,17 +19,20 @@ func Part2() int {
 }
 
 func solve1(input []string) int {
-	grid := BuildGrid(input)
-	partNumbers := GetPartNumbers(grid)
+	grid := buildGrid(input)
+	partNumbers := getPartNumbers(grid)
 
-	return SumPartNumbers(partNumbers)
+	return sumPartNumbers(partNumbers)
 }
 
 func solve2(input []string) int {
-	return 0
+	grid := buildGrid(input)
+	partNumbers := getPartNumbers(grid)
+
+	return sumGearRatios(grid, partNumbers)
 }
 
-func BuildGrid(input []string) [][]rune {
+func buildGrid(input []string) [][]rune {
 	grid := make([][]rune, len(input))
 
 	for row, line := range input {
@@ -42,7 +45,7 @@ func BuildGrid(input []string) [][]rune {
 	return grid
 }
 
-func GetPartNumbers(grid [][]rune) []PartNumber {
+func getPartNumbers(grid [][]rune) []PartNumber {
 	partNumbers := make([]PartNumber, 0)
 
 	for row := 0; row < len(grid); row++ {
@@ -72,12 +75,7 @@ func GetPartNumbers(grid [][]rune) []PartNumber {
 						}
 
 						if grid[r][c] != '.' && (grid[r][c] < '0' || grid[r][c] > '9') {
-							partNumbers = append(partNumbers, PartNumber{
-								number:   currentNumber,
-								row:      row,
-								startCol: start,
-								endCol:   end,
-							})
+							partNumbers = append(partNumbers, PartNumber{currentNumber, row, start, end})
 						}
 					}
 				}
@@ -88,7 +86,7 @@ func GetPartNumbers(grid [][]rune) []PartNumber {
 	return partNumbers
 }
 
-func SumPartNumbers(numbers []PartNumber) int {
+func sumPartNumbers(numbers []PartNumber) int {
 	sum := 0
 
 	for _, number := range numbers {
@@ -96,4 +94,30 @@ func SumPartNumbers(numbers []PartNumber) int {
 	}
 
 	return sum
+}
+
+func sumGearRatios(grid [][]rune, partNumbers []PartNumber) int {
+	result := 0
+
+	for row := 0; row < len(grid); row++ {
+		for col := 0; col < len(grid[row]); col++ {
+			if grid[row][col] == '*' {
+				count := 0
+				adjacentNumbers := make([]int, 0)
+
+				for _, number := range partNumbers {
+					if number.row >= row-1 && number.row <= row+1 && number.endCol >= col-1 && number.startCol <= col+1 {
+						count++
+						adjacentNumbers = append(adjacentNumbers, number.number)
+					}
+				}
+
+				if count == 2 {
+					result += adjacentNumbers[0] * adjacentNumbers[1]
+				}
+			}
+		}
+	}
+
+	return result
 }
